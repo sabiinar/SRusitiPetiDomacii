@@ -13,7 +13,6 @@ import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.platform.LocalContext
@@ -22,6 +21,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.*
 import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.Alignment
 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
@@ -39,10 +39,14 @@ fun MainScreen() {
     val scope = rememberCoroutineScope()
     var longPressJob by remember { mutableStateOf<Job?>(null) }
 
+    fun sentenceCase(word: String): String {
+        return word.lowercase().replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Листа Речи") },
+                title = { Text("Aplikacija: Lista Reči") },
                 actions = {
                     IconButton(onClick = {
                         ascendingOrder = !ascendingOrder
@@ -50,9 +54,8 @@ fun MainScreen() {
                         words = wordsRepository.words
                     }) {
                         Icon(
-                            imageVector = if (ascendingOrder) Icons.Filled.ArrowDownward
-                            else Icons.Filled.ArrowUpward,
-                            contentDescription = "Сортирај"
+                            imageVector = if (ascendingOrder) Icons.Filled.ArrowDownward else Icons.Filled.ArrowUpward,
+                            contentDescription = if (ascendingOrder) "Sortiraj A → Z" else "Sortiraj Z → A"
                         )
                     }
                 }
@@ -84,7 +87,7 @@ fun MainScreen() {
                         false
                     }
                 ) {
-                    Text("Иди на почетак")
+                    Text("Idi na početak")
                 }
                 Button(onClick = {
                     scope.launch {
@@ -92,7 +95,7 @@ fun MainScreen() {
                         lazyListState.scrollToItem(lastIndex)
                     }
                 }) {
-                    Text("Иди на крај")
+                    Text("Idi na kraj")
                 }
             }
         }
@@ -111,7 +114,7 @@ fun MainScreen() {
                     }
                     errorMessage = null
                 },
-                label = { Text("Унеси реч") },
+                label = { Text("Unesi reč") },
                 isError = errorMessage != null,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -144,17 +147,17 @@ fun MainScreen() {
                     val word = textFieldValue.text.trim()
                     when {
                         word.isEmpty() || word.length > 20 -> {
-                            errorMessage = "Унесите реч до 20 слова"
+                            errorMessage = "Unesite reč do 20 slova"
                         }
                         words.any { it.equals(word, true) } -> {
-                            errorMessage = "Реч већ постоји"
+                            errorMessage = "Reč već postoji"
                         }
                         else -> {
                             wordsRepository.addWord(word)
-                            wordsRepository.sortWords(ascendingOrder)
+                            wordsRepository.sortWords(ascendingOrder) // sort immediately after adding
                             words = wordsRepository.words
                             keyboardController?.hide()
-                            Toast.makeText(context, "Реч успешно додата", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Reč uspešno dodata", Toast.LENGTH_SHORT).show()
                             textFieldValue = TextFieldValue("")
                         }
                     }
@@ -164,11 +167,11 @@ fun MainScreen() {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         imageVector = Icons.Filled.Add,
-                        contentDescription = "Додај",
+                        contentDescription = "Dodaj",
                         modifier = Modifier.size(ButtonDefaults.IconSize)
                     )
                     Spacer(Modifier.width(ButtonDefaults.IconSpacing))
-                    Text("Додај реч")
+                    Text("Dodaj reč")
                 }
             }
 
@@ -181,15 +184,15 @@ fun MainScreen() {
                 items(words) { word ->
                     ListItem(
                         headlineContent = {
-                            Text(word.replaceFirstChar { it.uppercase() })
+                            Text(sentenceCase(word))
                         },
                         trailingContent = {
                             IconButton(onClick = {
                                 wordsRepository.removeWord(word)
                                 words = wordsRepository.words
-                                Toast.makeText(context, "Обрисано: $word", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "Obrisano: $word", Toast.LENGTH_SHORT).show()
                             }) {
-                                Icon(Icons.Filled.Delete, contentDescription = "Обриши")
+                                Icon(Icons.Filled.Delete, contentDescription = "Obriši")
                             }
                         }
                     )
@@ -202,21 +205,21 @@ fun MainScreen() {
     if (showDialog) {
         AlertDialog(
             onDismissRequest = { showDialog = false },
-            title = { Text("Брисање свих речи") },
-            text = { Text("Да ли сте сигурни да желите да обришете све речи?") },
+            title = { Text("Brisanje svih reči") },
+            text = { Text("Da li ste sigurni da želite da obrišete sve reči?") },
             confirmButton = {
                 TextButton(onClick = {
                     wordsRepository.clearAll()
                     words = wordsRepository.words
                     showDialog = false
-                    Toast.makeText(context, "Све речи обрисане", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Sve reči obrisane", Toast.LENGTH_SHORT).show()
                 }) {
-                    Text("Да")
+                    Text("Da")
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDialog = false }) {
-                    Text("Не")
+                    Text("Ne")
                 }
             }
         )
