@@ -5,7 +5,7 @@ package rs.ac.pr.ftn.srusitipetidomacii
 
 class WordsRepository {
     private val _words = mutableListOf(
-        "Демократија", "Слобода", "Студенти", "Универзитет"
+        "Demokratija", "Sloboda", "Studenti", "Univerzitet"
     )
     val words: List<String> get() = _words.toList()
 
